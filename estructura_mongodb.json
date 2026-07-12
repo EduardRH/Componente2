@@ -1,0 +1,63 @@
+{
+  "usuarios": [
+    {
+      "_id": {
+        "$oid": "60c72b2f9b1d8b2d88a1b2c3"
+      },
+      "nombre": "Eduardo",
+      "email": "eduardo@ejemplo.com",
+      "password": "$2a$10$X87K.8YcO9X03w1823H01.761.U738H1832049Hj120381Jkld234",
+      "createdAt": {
+        "$date": "2026-07-11T19:40:00.000Z"
+      },
+      "updatedAt": {
+        "$date": "2026-07-11T19:40:00.000Z"
+      },
+      "__v": 0
+    }
+  ],
+  "tareas": [
+    {
+      "_id": {
+        "$oid": "60c72b5a9b1d8b2d88a1b2c4"
+      },
+      "titulo": "Aprender Node.js y Express",
+      "descripcion": "Desarrollar una API REST completa y segura",
+      "estado": "pendiente",
+      "prioridad": "Alta",
+      "categoria": "Trabajo",
+      "fechaLimite": "2026-07-20",
+      "usuarioId": {
+        "$oid": "60c72b2f9b1d8b2d88a1b2c3"
+      },
+      "createdAt": {
+        "$date": "2026-07-11T19:42:00.000Z"
+      },
+      "updatedAt": {
+        "$date": "2026-07-11T19:42:00.000Z"
+      },
+      "__v": 0
+    },
+    {
+      "_id": {
+        "$oid": "60c72b6b9b1d8b2d88a1b2c5"
+      },
+      "titulo": "Implementar Front-end con React",
+      "descripcion": "Crear vistas interactivas con manejo de estados",
+      "estado": "completada",
+      "prioridad": "Media",
+      "categoria": "Trabajo",
+      "fechaLimite": "2026-07-22",
+      "usuarioId": {
+        "$oid": "60c72b2f9b1d8b2d88a1b2c3"
+      },
+      "createdAt": {
+        "$date": "2026-07-11T19:43:00.000Z"
+      },
+      "updatedAt": {
+        "$date": "2026-07-11T19:44:00.000Z"
+      },
+      "__v": 0
+    }
+  ]
+}
