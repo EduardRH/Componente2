@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { 
   LayoutGrid, 
@@ -12,8 +12,12 @@ import {
   Check, 
   Plus,
   Menu,
-  X
+  X,
+  Search,
+  ArrowUpDown,
+  BarChart2
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usarAutenticacion } from '../contexto/AutenticacionContexto';
 import FormularioTarea from '../componentes/FormularioTarea';
 
@@ -29,6 +33,9 @@ const PanelControl = () => {
   const [mostrarMenuMovil, establecerMostrarMenuMovil] = useState(false);
   const [mostrarModalEliminar, establecerMostrarModalEliminar] = useState(false);
   const [tareaSeleccionadaEliminar, establecerTareaSeleccionadaEliminar] = useState(null);
+  const [terminoBusqueda, establecerTerminoBusqueda] = useState('');
+  const [ordenarPorFecha, establecerOrdenarPorFecha] = useState(false);
+  const [mostrarEstadisticas, establecerMostrarEstadisticas] = useState(false);
 
   const cargarTareas = async () => {
     try {
@@ -129,11 +136,74 @@ const PanelControl = () => {
     return nombreCompleto[0].toUpperCase();
   };
 
-  const tareasFiltradas = tareas.filter((t) => {
-    if (filtro === 'pendientes') return t.estado === 'pendiente';
-    if (filtro === 'completadas') return t.estado === 'completada';
-    return true;
-  });
+  const estadisticasProgreso = useMemo(() => {
+    const total = tareas.length;
+    const completadas = tareas.filter((t) => t.estado === 'completada').length;
+    const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
+    return { total, completadas, porcentaje };
+  }, [tareas]);
+
+  const datosGrafico = useMemo(() => {
+    const ultimos7Dias = [];
+    const hoy = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const dia = new Date(hoy);
+      dia.setDate(hoy.getDate() - i);
+      const fechaFormateada = dia.toISOString().split('T')[0];
+      const etiquetaDia = dia.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase();
+      
+      let creadas = 0;
+      let completadas = 0;
+      
+      tareas.forEach((tarea) => {
+        if (tarea.createdAt) {
+          const fechaCreacion = tarea.createdAt.split('T')[0];
+          if (fechaCreacion === fechaFormateada) {
+            creadas++;
+          }
+        }
+        if (tarea.estado === 'completada' && tarea.updatedAt) {
+          const fechaActualizacion = tarea.updatedAt.split('T')[0];
+          if (fechaActualizacion === fechaFormateada) {
+            completadas++;
+          }
+        }
+      });
+
+      ultimos7Dias.push({
+        dia: etiquetaDia,
+        Añadidas: creadas,
+        Completadas: completadas
+      });
+    }
+    return ultimos7Dias;
+  }, [tareas]);
+
+  const tareasFiltradas = useMemo(() => {
+    let resultado = tareas.filter((tarea) => {
+      const coincideFiltro =
+        filtro === 'todas' ||
+        (filtro === 'pendientes' && tarea.estado === 'pendiente') ||
+        (filtro === 'completadas' && tarea.estado === 'completada');
+
+      const coincideBusqueda =
+        !terminoBusqueda ||
+        tarea.titulo.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+        (tarea.descripcion && tarea.descripcion.toLowerCase().includes(terminoBusqueda.toLowerCase()));
+
+      return coincideFiltro && coincideBusqueda;
+    });
+
+    if (ordenarPorFecha) {
+      resultado.sort((a, b) => {
+        if (!a.fechaLimite) return 1;
+        if (!b.fechaLimite) return -1;
+        return new Date(a.fechaLimite) - new Date(b.fechaLimite);
+      });
+    }
+
+    return resultado;
+  }, [tareas, filtro, terminoBusqueda, ordenarPorFecha]);
 
   return (
     <div className="contenedor-panel">
@@ -234,28 +304,128 @@ const PanelControl = () => {
         )}
       </div>
 
-      <div className="filtros-estado-tarjeta">
-        <button
-          onClick={() => establecerFiltro('todas')}
-          className={`boton-filtro-pestania ${filtro === 'todas' ? 'activo' : ''}`}
-        >
-          <LayoutGrid size={18} />
-          <span>Todas</span>
-        </button>
-        <button
-          onClick={() => establecerFiltro('pendientes')}
-          className={`boton-filtro-pestania ${filtro === 'pendientes' ? 'activo' : ''}`}
-        >
-          <Clock size={18} />
-          <span>Pendientes</span>
-        </button>
-        <button
-          onClick={() => establecerFiltro('completadas')}
-          className={`boton-filtro-pestania ${filtro === 'completadas' ? 'activo' : ''}`}
-        >
-          <CheckCircle2 size={18} />
-          <span>Completadas</span>
-        </button>
+      <div className="contenedor-progreso-dinamico">
+        <div className="fila-progreso-cabecera">
+          <div className="texto-progreso-dinamico">
+            Progreso: {estadisticasProgreso.completadas} de {estadisticasProgreso.total} tareas completadas ({estadisticasProgreso.porcentaje}%)
+          </div>
+          <button
+            type="button"
+            onClick={() => establecerMostrarEstadisticas(!mostrarEstadisticas)}
+            className={`boton-ver-actividad ${mostrarEstadisticas ? 'activo' : ''}`}
+          >
+            <BarChart2 size={16} />
+            <span>Ver Actividad</span>
+          </button>
+        </div>
+        <div className="barra-progreso-dinamico-fondo">
+          <div
+            className="barra-progreso-dinamico-relleno"
+            style={{ width: `${estadisticasProgreso.porcentaje}%` }}
+          />
+        </div>
+      </div>
+
+      {mostrarEstadisticas && (
+        <div className="contenedor-grafico-actividad">
+          <h3 className="titulo-grafico-actividad">Actividad de los ultimos 7 dias</h3>
+          <div className="grafico-wrapper">
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={datosGrafico} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+                <XAxis 
+                  dataKey="dia" 
+                  stroke="#94a3b8" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <YAxis 
+                  stroke="#94a3b8" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  allowDecimals={false}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    background: '#141b2f', 
+                    border: '1px solid rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '0.5rem',
+                    color: '#f8fafc' 
+                  }}
+                  cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }}
+                />
+                <Legend 
+                  iconType="circle"
+                  iconSize={8}
+                  wrapperStyle={{ fontSize: 12, paddingTop: 10 }}
+                />
+                <Bar 
+                  dataKey="Añadidas" 
+                  fill="var(--color-acento-cian)" 
+                  radius={[4, 4, 0, 0]} 
+                />
+                <Bar 
+                  dataKey="Completadas" 
+                  fill="var(--color-acento-morado)" 
+                  radius={[4, 4, 0, 0]} 
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      <div className="contenedor-barra-filtros">
+        <div className="filtros-estado-tarjeta">
+          <button
+            type="button"
+            onClick={() => establecerFiltro('todas')}
+            className={`boton-filtro-pestania ${filtro === 'todas' ? 'activo' : ''}`}
+          >
+            <LayoutGrid size={18} />
+            <span>Todas</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => establecerFiltro('pendientes')}
+            className={`boton-filtro-pestania ${filtro === 'pendientes' ? 'activo' : ''}`}
+          >
+            <Clock size={18} />
+            <span>Pendientes</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => establecerFiltro('completadas')}
+            className={`boton-filtro-pestania ${filtro === 'completadas' ? 'activo' : ''}`}
+          >
+            <CheckCircle2 size={18} />
+            <span>Completadas</span>
+          </button>
+        </div>
+
+        <div className="seccion-busqueda-ordenar">
+          <div className="entrada-busqueda-contenedor">
+            <Search size={18} className="icono-busqueda-lupa" />
+            <input
+              type="text"
+              placeholder="Buscar tareas..."
+              value={terminoBusqueda}
+              onChange={(e) => establecerTerminoBusqueda(e.target.value)}
+              className="entrada-busqueda-rapida"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => establecerOrdenarPorFecha(!ordenarPorFecha)}
+            className={`boton-ordenamiento-fecha ${ordenarPorFecha ? 'activo' : ''}`}
+            title="Ordenar por fecha limite (mas urgentes primero)"
+          >
+            <ArrowUpDown size={18} />
+          </button>
+        </div>
       </div>
 
       {cargando ? (
@@ -348,7 +518,7 @@ const PanelControl = () => {
               <div className="modal-confirmacion-contenido">
                 <h3>¿Eliminar esta tarea?</h3>
                 <p>
-                  Se eliminará «{tareaSeleccionadaEliminar?.titulo}». Podrás deshacer la acción desde la notificación.
+                  Se eliminará «{tareaSeleccionadaEliminar?.titulo}».
                 </p>
                 <div className="acciones-modal-confirmacion">
                   <button onClick={cancelarEliminacion} className="boton-confirmacion-cancelar">
