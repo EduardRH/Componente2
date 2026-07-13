@@ -1,230 +1,287 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, CheckCircle2, XCircle } from 'lucide-react';
-import { usarAutenticacion } from '../contexto/AutenticacionContexto';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, ArrowRight, Check, X } from "lucide-react";
+import { usarAutenticacion } from "../contexto/AutenticacionContexto";
 
-const Registro = () => {
-  const [nombre, establecerNombre] = useState('');
-  const [correo, establecerCorreo] = useState('');
-  const [contrasenia, establecerContrasenia] = useState('');
-  const [confirmarContrasenia, establecerConfirmarContrasenia] = useState('');
-  const [mensajeError, establecerMensajeError] = useState('');
-  const [mensajeExito, establecerMensajeExito] = useState('');
+const PantallaRegistro = () => {
+  const [datosFormulario, establecerDatosFormulario] = useState({
+    nombre: "",
+    correo: "",
+    contrasenia: "",
+    confirmarContrasenia: "",
+  });
+
+  const [erroresValidacion, establecerErroresValidacion] = useState({
+    nombre: null,
+    correo: null,
+    contrasenia: null,
+    confirmarContrasenia: null,
+  });
+
+  const [mostrarContrasenia, establecerMostrarContrasenia] = useState(false);
+  const [mensajeError, establecerMensajeError] = useState("");
+  const [mensajeExito, establecerMensajeExito] = useState("");
   const [cargando, establecerCargando] = useState(false);
-
-  const [nombreValido, establecerNombreValido] = useState(null);
-  const [correoValido, establecerCorreoValido] = useState(null);
-  const [contraseniaValida, establecerContraseniaValida] = useState(null);
-  const [confirmacionValida, establecerConfirmacionValida] = useState(null);
 
   const { registrarUsuario } = usarAutenticacion();
   const navegar = useNavigate();
 
-  useEffect(() => {
-    if (nombre === '') {
-      establecerNombreValido(null);
-    } else {
-      establecerNombreValido(nombre.trim().length >= 3);
-    }
-  }, [nombre]);
+  const alternarVisibilidadContrasena = () => {
+    establecerMostrarContrasenia(!mostrarContrasenia);
+  };
 
-  useEffect(() => {
-    if (correo === '') {
-      establecerCorreoValido(null);
-    } else {
+  const manejarCambio = (evento) => {
+    const { name, value } = evento.target;
+    const nuevosDatos = { ...datosFormulario, [name]: value };
+    establecerDatosFormulario(nuevosDatos);
+
+    const nuevosErrores = { ...erroresValidacion };
+    if (name === "nombre") {
+      nuevosErrores.nombre = value.trim().length >= 3;
+    } else if (name === "correo") {
       const patronCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      establecerCorreoValido(patronCorreo.test(correo));
+      nuevosErrores.correo = patronCorreo.test(value);
+    } else if (name === "contrasenia") {
+      nuevosErrores.contrasenia = value.length >= 6;
+      if (nuevosDatos.confirmarContrasenia) {
+        nuevosErrores.confirmarContrasenia =
+          value === nuevosDatos.confirmarContrasenia;
+      }
+    } else if (name === "confirmarContrasenia") {
+      nuevosErrores.confirmarContrasenia =
+        value === nuevosDatos.contrasenia &&
+        nuevosDatos.contrasenia.length >= 6;
     }
-  }, [correo]);
-
-  useEffect(() => {
-    if (contrasenia === '') {
-      establecerContraseniaValida(null);
-    } else {
-      establecerContraseniaValida(contrasenia.length >= 6);
-    }
-  }, [contrasenia]);
-
-  useEffect(() => {
-    if (confirmarContrasenia === '') {
-      establecerConfirmacionValida(null);
-    } else {
-      establecerConfirmacionValida(
-        confirmarContrasenia === contrasenia && contrasenia.length >= 6
-      );
-    }
-  }, [confirmarContrasenia, contrasenia]);
+    establecerErroresValidacion(nuevosErrores);
+  };
 
   const manejarEnvio = async (evento) => {
     evento.preventDefault();
+    const { nombre, correo, contrasenia, confirmarContrasenia } =
+      datosFormulario;
+
     if (!nombre || !correo || !contrasenia || !confirmarContrasenia) {
-      establecerMensajeError('Todos los campos son obligatorios');
+      establecerMensajeError("Todos los campos son obligatorios");
       return;
     }
     if (contrasenia !== confirmarContrasenia) {
-      establecerMensajeError('Las contraseñas no coinciden');
+      establecerMensajeError("Las contraseñas no coinciden");
       return;
     }
+    if (contrasenia.length < 6) {
+      establecerMensajeError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
     try {
-      establecerMensajeError('');
-      establecerMensajeExito('');
+      establecerMensajeError("");
+      establecerMensajeExito("");
       establecerCargando(true);
       await registrarUsuario(nombre, correo, contrasenia);
-      establecerMensajeExito('Registro exitoso. Redirigiendo al inicio de sesion...');
+      establecerMensajeExito(
+        "Registro exitoso. Redirigiendo al inicio de sesion...",
+      );
       setTimeout(() => {
-        navegar('/login');
+        navegar("/login");
       }, 2000);
     } catch (errorPeticion) {
       establecerMensajeError(
-        errorPeticion.response?.data?.mensaje || 'Error al intentar registrarse'
+        errorPeticion.response?.data?.mensaje ||
+          "Error al intentar registrarse",
       );
       establecerCargando(false);
     }
   };
 
+  const obtenerClaseInput = (campo) => {
+    const estado = erroresValidacion[campo];
+    if (estado === null) return "";
+    return estado ? "campo-valido" : "campo-invalido";
+  };
+
   return (
-    <div className="contenedor-autenticacion">
-      <div className="tarjeta-autenticacion">
-        <h2 className="titulo-formulario">
-          Registra <span className="texto-destacado-formulario">Cuenta</span>
-        </h2>
-        <p className="subtitulo-autenticacion">
-          Comienza a organizar tu trabajo hoy mismo
-        </p>
+    <div className="pantalla-acceso-contenedor">
+      <div className="panel-informativo-izquierdo">
+        <div className="indicador-superior-panel">
+          <span className="punto-indicador"></span>
+          <span>SISTEMA DE TAREAS • 2026</span>
+        </div>
+        <div className="contenido-principal-panel">
+          <span className="categoria-titulo-panel">TaskMaster Dark</span>
+          <h1>Ordena tu día, sin ruido.</h1>
+          <p>
+            Un panel único para crear, priorizar y completar tareas. Rápido,
+            claro y directo.
+          </p>
+        </div>
+        <div className="tarjetas-metricas-panel">
+          <div className="tarjeta-metrica-item">
+            <h3>100%</h3>
+            <span>ENFOQUE</span>
+          </div>
+          <div className="tarjeta-metrica-item">
+            <h3>3</h3>
+            <span>CATEGORÍAS</span>
+          </div>
+          <div className="tarjeta-metrica-item">
+            <h3>0</h3>
+            <span>DISTRACCIÓN</span>
+          </div>
+        </div>
+      </div>
 
-        {mensajeError && <div className="alerta-error">{mensajeError}</div>}
-        {mensajeExito && <div className="alerta-exito">{mensajeExito}</div>}
-
-        <form onSubmit={manejarEnvio} noValidate>
-          <div className="grupo-formulario">
-            <label htmlFor="nombre-completo-registro">Nombre Completo</label>
-            <div className="contenedor-entrada-icono">
-              <User className="icono-entrada-izquierdo" size={18} />
-              <input
-                id="nombre-completo-registro"
-                type="text"
-                value={nombre}
-                onChange={(e) => establecerNombre(e.target.value)}
-                placeholder="Tu nombre completo"
-                required
-              />
-              {nombreValido !== null && (
-                nombreValido ? (
-                  <CheckCircle2 className="icono-validacion-derecho exito" size={18} />
-                ) : (
-                  <XCircle className="icono-validacion-derecho error" size={18} />
-                )
-              )}
-            </div>
+      <div className="formulario-acceso-derecho">
+        <div className="contenido-formulario-acceso">
+          <div className="cabecera-formulario-acceso">
+            <h2>Crea tu cuenta</h2>
+            <p>Organiza tu día en menos de un minuto.</p>
           </div>
 
-          <div className="grupo-formulario">
-            <label htmlFor="correo-registro">Correo Electronico</label>
-            <div className="contenedor-entrada-icono">
-              <Mail className="icono-entrada-izquierdo" size={18} />
-              <input
-                id="correo-registro"
-                type="email"
-                value={correo}
-                onChange={(e) => establecerCorreo(e.target.value)}
-                placeholder="correo@ejemplo.com"
-                required
-              />
-              {correoValido !== null && (
-                correoValido ? (
-                  <CheckCircle2 className="icono-validacion-derecho exito" size={18} />
-                ) : (
-                  <XCircle className="icono-validacion-derecho error" size={18} />
-                )
-              )}
+          {mensajeError && <div className="alerta-error">{mensajeError}</div>}
+          {mensajeExito && <div className="alerta-exito">{mensajeExito}</div>}
+
+          <form onSubmit={manejarEnvio} noValidate>
+            <div className="campo-acceso-grupo">
+              <label htmlFor="nombre-registro">NOMBRE COMPLETO</label>
+              <div className="contenedor-input-validador">
+                <input
+                  id="nombre-registro"
+                  type="text"
+                  name="nombre"
+                  value={datosFormulario.nombre}
+                  onChange={manejarCambio}
+                  placeholder="Ana López"
+                  className={obtenerClaseInput("nombre")}
+                  required
+                />
+                {erroresValidacion.nombre !== null && (
+                  <span className="icono-validador-flotante">
+                    {erroresValidacion.nombre ? (
+                      <Check className="exito" size={16} />
+                    ) : (
+                      <X className="error" size={16} />
+                    )}
+                  </span>
+                )}
+              </div>
             </div>
-            {correoValido === false && (
-              <span className="mensaje-ayuda-entrada error">
-                <XCircle size={12} /> Correo no valido
-              </span>
-            )}
-            {correoValido === true && (
-              <span className="mensaje-ayuda-entrada exito">
-                <CheckCircle2 size={12} /> Correo valido
-              </span>
-            )}
-          </div>
 
-          <div className="grupo-formulario">
-            <label htmlFor="contrasenia-registro">Contraseña</label>
-            <div className="contenedor-entrada-icono">
-              <Lock className="icono-entrada-izquierdo" size={18} />
-              <input
-                id="contrasenia-registro"
-                type="password"
-                value={contrasenia}
-                onChange={(e) => establecerContrasenia(e.target.value)}
-                placeholder="Tu contraseña"
-                required
-              />
-              {contraseniaValida !== null && (
-                contraseniaValida ? (
-                  <CheckCircle2 className="icono-validacion-derecho exito" size={18} />
-                ) : (
-                  <XCircle className="icono-validacion-derecho error" size={18} />
-                )
-              )}
+            <div className="campo-acceso-grupo">
+              <label htmlFor="correo-registro">CORREO</label>
+              <div className="contenedor-input-validador">
+                <input
+                  id="correo-registro"
+                  type="email"
+                  name="correo"
+                  value={datosFormulario.correo}
+                  onChange={manejarCambio}
+                  placeholder="tu@correo.com"
+                  className={obtenerClaseInput("correo")}
+                  required
+                />
+                {erroresValidacion.correo !== null && (
+                  <span className="icono-validador-flotante">
+                    {erroresValidacion.correo ? (
+                      <Check className="exito" size={16} />
+                    ) : (
+                      <X className="error" size={16} />
+                    )}
+                  </span>
+                )}
+              </div>
             </div>
-            {contraseniaValida === false && (
-              <span className="mensaje-ayuda-entrada error">
-                <XCircle size={12} /> Minimo 6 caracteres
-              </span>
-            )}
-            {contraseniaValida === true && (
-              <span className="mensaje-ayuda-entrada exito">
-                <CheckCircle2 size={12} /> Minimo 6 caracteres
-              </span>
-            )}
-          </div>
 
-          <div className="grupo-formulario">
-            <label htmlFor="confirmar-contrasenia-registro">Confirmar Contraseña</label>
-            <div className="contenedor-entrada-icono">
-              <Lock className="icono-entrada-izquierdo" size={18} />
-              <input
-                id="confirmar-contrasenia-registro"
-                type="password"
-                value={confirmarContrasenia}
-                onChange={(e) => establecerConfirmarContrasenia(e.target.value)}
-                placeholder="Repite tu contraseña"
-                required
-              />
-              {confirmacionValida !== null && (
-                confirmacionValida ? (
-                  <CheckCircle2 className="icono-validacion-derecho exito" size={18} />
-                ) : (
-                  <XCircle className="icono-validacion-derecho error" size={18} />
-                )
-              )}
+            <div className="fila-campos-doble">
+              <div className="campo-acceso-grupo col-50">
+                <label htmlFor="contrasenia-registro">CONTRASEÑA</label>
+                <div className="contenedor-input-validador">
+                  <input
+                    id="contrasenia-registro"
+                    type={mostrarContrasenia ? "text" : "password"}
+                    name="contrasenia"
+                    value={datosFormulario.contrasenia}
+                    onChange={manejarCambio}
+                    placeholder="6+ caracteres"
+                    className={obtenerClaseInput("contrasenia")}
+                    required
+                  />
+                  {erroresValidacion.contrasenia !== null && (
+                    <span className="icono-validador-flotante con-toggle">
+                      {erroresValidacion.contrasenia ? (
+                        <Check className="exito" size={16} />
+                      ) : (
+                        <X className="error" size={16} />
+                      )}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={alternarVisibilidadContrasena}
+                    className="boton-toggle-visibilidad"
+                  >
+                    {mostrarContrasenia ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="campo-acceso-grupo col-50">
+                <label htmlFor="confirmar-registro">CONFIRMAR</label>
+                <div className="contenedor-input-validador">
+                  <input
+                    id="confirmar-registro"
+                    type={mostrarContrasenia ? "text" : "password"}
+                    name="confirmarContrasenia"
+                    value={datosFormulario.confirmarContrasenia}
+                    onChange={manejarCambio}
+                    placeholder="Repite"
+                    className={obtenerClaseInput("confirmarContrasenia")}
+                    required
+                  />
+                  {erroresValidacion.confirmarContrasenia !== null && (
+                    <span className="icono-validador-flotante con-toggle">
+                      {erroresValidacion.confirmarContrasenia ? (
+                        <Check className="exito" size={16} />
+                      ) : (
+                        <X className="error" size={16} />
+                      )}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={alternarVisibilidadContrasena}
+                    className="boton-toggle-visibilidad"
+                  >
+                    {mostrarContrasenia ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
-            {confirmacionValida === false && (
-              <span className="mensaje-ayuda-entrada error">
-                <XCircle size={12} /> Las contraseñas no coinciden
-              </span>
-            )}
-            {confirmacionValida === true && (
-              <span className="mensaje-ayuda-entrada exito">
-                <CheckCircle2 size={12} /> Contraseñas coinciden
-              </span>
-            )}
-          </div>
 
-          <button type="submit" className="boton-primario" disabled={cargando}>
-            {cargando ? 'Registrando...' : 'Registrarse'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="boton-acceder-envio"
+              disabled={cargando}
+            >
+              <span>{cargando ? "CREANDO CUENTA..." : "CREAR CUENTA"}</span>
+              <ArrowRight size={18} />
+            </button>
+          </form>
 
-        <p className="enlace-autenticacion">
-          ¿Ya tienes una cuenta? <Link to="/login">Inicia sesion aqui</Link>
-        </p>
+          <p className="enlace-cambio-registro">
+            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Registro;
+export default PantallaRegistro;

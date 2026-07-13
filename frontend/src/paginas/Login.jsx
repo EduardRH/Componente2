@@ -1,51 +1,37 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, CheckCircle2, XCircle } from 'lucide-react';
-import { usarAutenticacion } from '../contexto/AutenticacionContexto';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { usarAutenticacion } from "../contexto/AutenticacionContexto";
 
-const Login = () => {
-  const [correo, establecerCorreo] = useState('');
-  const [contrasenia, establecerContrasenia] = useState('');
-  const [mensajeError, establecerMensajeError] = useState('');
+const PantallaAcceso = () => {
+  const [correo, establecerCorreo] = useState("");
+  const [contrasenia, establecerContrasenia] = useState("");
+  const [mostrarContrasenia, establecerMostrarContrasenia] = useState(false);
+  const [mensajeError, establecerMensajeError] = useState("");
   const [cargando, establecerCargando] = useState(false);
-
-  const [correoValido, establecerCorreoValido] = useState(null);
-  const [contraseniaValida, establecerContraseniaValida] = useState(null);
 
   const { iniciarSesion } = usarAutenticacion();
   const navegar = useNavigate();
 
-  useEffect(() => {
-    if (correo === '') {
-      establecerCorreoValido(null);
-    } else {
-      const patronCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      establecerCorreoValido(patronCorreo.test(correo));
-    }
-  }, [correo]);
-
-  useEffect(() => {
-    if (contrasenia === '') {
-      establecerContraseniaValida(null);
-    } else {
-      establecerContraseniaValida(contrasenia.length >= 6);
-    }
-  }, [contrasenia]);
+  const alternarVisibilidadContrasena = () => {
+    establecerMostrarContrasenia(!mostrarContrasenia);
+  };
 
   const manejarEnvio = async (evento) => {
     evento.preventDefault();
     if (!correo || !contrasenia) {
-      establecerMensajeError('El correo y la contrasenia son obligatorios');
+      establecerMensajeError("El correo y la contraseña son obligatorios");
       return;
     }
     try {
-      establecerMensajeError('');
+      establecerMensajeError("");
       establecerCargando(true);
       await iniciarSesion(correo, contrasenia);
-      navegar('/');
+      navegar("/");
     } catch (errorPeticion) {
       establecerMensajeError(
-        errorPeticion.response?.data?.mensaje || 'Credenciales incorrectas o error de conexion'
+        errorPeticion.response?.data?.mensaje ||
+          "Credenciales incorrectas o error de conexion",
       );
     } finally {
       establecerCargando(false);
@@ -53,73 +39,100 @@ const Login = () => {
   };
 
   return (
-    <div className="contenedor-autenticacion">
-      <div className="tarjeta-autenticacion">
-        <h2 className="titulo-formulario">
-          Iniciar <span className="texto-destacado-formulario">Sesion</span>
-        </h2>
-        <p className="subtitulo-autenticacion">
-          Gestiona tus tareas diarias de forma eficiente
-        </p>
+    <div className="pantalla-acceso-contenedor">
+      <div className="panel-informativo-izquierdo">
+        <div className="indicador-superior-panel">
+          <span className="punto-indicador"></span>
+          <span>SISTEMA DE TAREAS • 2026</span>
+        </div>
+        <div className="contenido-principal-panel">
+          <span className="categoria-titulo-panel">TaskMaster Dark</span>
+          <h1>Ordena tu día, sin ruido.</h1>
+          <p>
+            Un panel único para crear, priorizar y completar tareas. Rápido,
+            claro y directo.
+          </p>
+        </div>
+        <div className="tarjetas-metricas-panel">
+          <div className="tarjeta-metrica-item">
+            <h3>100%</h3>
+            <span>ENFOQUE</span>
+          </div>
+          <div className="tarjeta-metrica-item">
+            <h3>3</h3>
+            <span>CATEGORÍAS</span>
+          </div>
+          <div className="tarjeta-metrica-item">
+            <h3>0</h3>
+            <span>DISTRACCIÓN</span>
+          </div>
+        </div>
+      </div>
 
-        {mensajeError && <div className="alerta-error">{mensajeError}</div>}
+      <div className="formulario-acceso-derecho">
+        <div className="contenido-formulario-acceso">
+          <div className="cabecera-formulario-acceso">
+            <h2>Inicia sesión</h2>
+            <p>Entra a tu panel para gestionar tus tareas.</p>
+          </div>
 
-        <form onSubmit={manejarEnvio} noValidate>
-          <div className="grupo-formulario">
-            <label htmlFor="correo-login">Correo Electronico</label>
-            <div className="contenedor-entrada-icono">
-              <Mail className="icono-entrada-izquierdo" size={18} />
+          {mensajeError && <div className="alerta-error">{mensajeError}</div>}
+
+          <form onSubmit={manejarEnvio} noValidate>
+            <div className="campo-acceso-grupo">
+              <label htmlFor="correo-acceso">CORREO</label>
               <input
-                id="correo-login"
+                id="correo-acceso"
                 type="email"
                 value={correo}
                 onChange={(e) => establecerCorreo(e.target.value)}
-                placeholder="correo@ejemplo.com"
+                placeholder="tu@correo.com"
                 required
               />
-              {correoValido !== null && (
-                correoValido ? (
-                  <CheckCircle2 className="icono-validacion-derecho exito" size={18} />
-                ) : (
-                  <XCircle className="icono-validacion-derecho error" size={18} />
-                )
-              )}
             </div>
-          </div>
 
-          <div className="grupo-formulario">
-            <label htmlFor="contrasenia-login">Contraseña</label>
-            <div className="contenedor-entrada-icono">
-              <Lock className="icono-entrada-izquierdo" size={18} />
-              <input
-                id="contrasenia-login"
-                type="password"
-                value={contrasenia}
-                onChange={(e) => establecerContrasenia(e.target.value)}
-                placeholder="Contraseña"
-                required
-              />
-              {contraseniaValida !== null && (
-                contraseniaValida ? (
-                  <CheckCircle2 className="icono-validacion-derecho exito" size={18} />
-                ) : (
-                  <XCircle className="icono-validacion-derecho error" size={18} />
-                )
-              )}
+            <div className="campo-acceso-grupo">
+              <label htmlFor="contrasenia-acceso">CONTRASEÑA</label>
+              <div className="contenedor-entrada-password">
+                <input
+                  id="contrasenia-acceso"
+                  type={mostrarContrasenia ? "text" : "password"}
+                  value={contrasenia}
+                  onChange={(e) => establecerContrasenia(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={alternarVisibilidadContrasena}
+                  className="boton-toggle-visibilidad"
+                >
+                  {mostrarContrasenia ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <button type="submit" className="boton-primario" disabled={cargando}>
-            {cargando ? 'Iniciando sesion...' : 'Entrar'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="boton-acceder-envio"
+              disabled={cargando}
+            >
+              <span>{cargando ? "INICIANDO SESIÓN..." : "INICIAR SESIÓN"}</span>
+              <ArrowRight size={18} />
+            </button>
+          </form>
 
-        <p className="enlace-autenticacion">
-          ¿No tienes una cuenta? <Link to="/registro">Registrate aqui</Link>
-        </p>
+          <p className="enlace-cambio-registro">
+            ¿No tienes cuenta? <Link to="/registro">Crear cuenta</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default PantallaAcceso;

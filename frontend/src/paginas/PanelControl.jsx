@@ -27,6 +27,8 @@ const PanelControl = () => {
   const [tareaSeleccionada, establecerTareaSeleccionada] = useState(null);
   const [mostrarMenuPerfil, establecerMostrarMenuPerfil] = useState(false);
   const [mostrarMenuMovil, establecerMostrarMenuMovil] = useState(false);
+  const [mostrarModalEliminar, establecerMostrarModalEliminar] = useState(false);
+  const [tareaSeleccionadaEliminar, establecerTareaSeleccionadaEliminar] = useState(null);
 
   const cargarTareas = async () => {
     try {
@@ -71,15 +73,27 @@ const PanelControl = () => {
     }
   };
 
-  const manejarEliminar = async (id) => {
-    if (window.confirm('¿Seguro que deseas eliminar esta tarea?')) {
+  const manejarEliminar = (tarea) => {
+    establecerTareaSeleccionadaEliminar(tarea);
+    establecerMostrarModalEliminar(true);
+  };
+
+  const confirmarEliminacion = async () => {
+    if (tareaSeleccionadaEliminar) {
       try {
-        await axios.delete(`http://localhost:5000/api/tareas/${id}`);
-        establecerTareas(tareas.filter((t) => t._id !== id));
+        await axios.delete(`http://localhost:5000/api/tareas/${tareaSeleccionadaEliminar._id}`);
+        establecerTareas(tareas.filter((t) => t._id !== tareaSeleccionadaEliminar._id));
+        establecerMostrarModalEliminar(false);
+        establecerTareaSeleccionadaEliminar(null);
       } catch (errorPeticion) {
         establecerErrorServidor('Error al eliminar la tarea');
       }
     }
+  };
+
+  const cancelarEliminacion = () => {
+    establecerMostrarModalEliminar(false);
+    establecerTareaSeleccionadaEliminar(null);
   };
 
   const iniciarCreacion = () => {
@@ -305,7 +319,7 @@ const PanelControl = () => {
                       <Pencil size={16} />
                     </button>
                     <button
-                      onClick={() => manejarEliminar(tarea._id)}
+                      onClick={() => manejarEliminar(tarea)}
                       className="boton-accion-tarea eliminar"
                     >
                       <Trash2 size={16} />
@@ -324,6 +338,26 @@ const PanelControl = () => {
                   alGuardar={manejarGuardarTarea}
                   alCancelar={cancelarFormulario}
                 />
+              </div>
+            </div>
+          )}
+
+          {mostrarModalEliminar && (
+            <div className="modal-confirmacion-contenedor">
+              <div className="modal-confirmacion-overlay" onClick={cancelarEliminacion} />
+              <div className="modal-confirmacion-contenido">
+                <h3>¿Eliminar esta tarea?</h3>
+                <p>
+                  Se eliminará «{tareaSeleccionadaEliminar?.titulo}». Podrás deshacer la acción desde la notificación.
+                </p>
+                <div className="acciones-modal-confirmacion">
+                  <button onClick={cancelarEliminacion} className="boton-confirmacion-cancelar">
+                    Cancelar
+                  </button>
+                  <button onClick={confirmarEliminacion} className="boton-confirmacion-eliminar">
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           )}

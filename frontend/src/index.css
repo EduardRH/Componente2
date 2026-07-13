@@ -910,6 +910,398 @@ body {
   border-color: var(--color-borde-brillante);
 }
 
+.modal-confirmacion-contenedor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 1.5rem;
+}
+
+.modal-confirmacion-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(6, 9, 18, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.modal-confirmacion-contenido {
+  background: #141c2f;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
+    0 0 35px rgba(239, 68, 68, 0.07);
+  max-width: 28rem;
+  width: 100%;
+  padding: 2rem;
+  position: relative;
+  z-index: 10;
+  animation: modalEntrar 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-confirmacion-contenido h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.modal-confirmacion-contenido p {
+  font-size: 0.925rem;
+  line-height: 1.5;
+  color: var(--color-texto-secundario);
+  margin-top: 0;
+  margin-bottom: 1.75rem;
+}
+
+.acciones-modal-confirmacion {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.boton-confirmacion-cancelar {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.6rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1.35rem;
+  transition: all 0.2s ease;
+}
+
+.boton-confirmacion-cancelar:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.boton-confirmacion-eliminar {
+  background: #ff5252;
+  border: none;
+  border-radius: 0.6rem;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1.35rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 82, 82, 0.2);
+}
+
+.boton-confirmacion-eliminar:hover {
+  background: #ff3333;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(255, 82, 82, 0.35);
+}
+
+.pantalla-acceso-contenedor {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr;
+  height: 100vh;
+  width: 100vw;
+  background: #060912;
+  overflow: hidden;
+}
+
+.panel-informativo-izquierdo {
+  background: #0ea5e9;
+  margin: 1.25rem;
+  border-radius: 2rem;
+  padding: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.indicador-superior-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.punto-indicador {
+  width: 7px;
+  height: 7px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.contenido-principal-panel {
+  display: flex;
+  flex-direction: column;
+  max-width: 28rem;
+}
+
+.categoria-titulo-panel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1.5rem;
+}
+
+.contenido-principal-panel h1 {
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.5rem 0;
+  color: #ffffff;
+}
+
+.contenido-principal-panel p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.tarjetas-metricas-panel {
+  display: flex;
+  gap: 1rem;
+}
+
+.tarjeta-metrica-item {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tarjeta-metrica-item h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.tarjeta-metrica-item span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.formulario-acceso-derecho {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  height: 100vh;
+}
+
+.contenido-formulario-acceso {
+  max-width: 24rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecera-formulario-acceso {
+  margin-bottom: 2.25rem;
+}
+
+.paso-formulario-acceso {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #0ea5e9;
+}
+
+.cabecera-formulario-acceso h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0.5rem 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.cabecera-formulario-acceso p {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.campo-acceso-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.campo-acceso-grupo label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.campo-acceso-grupo input {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  color: #ffffff;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.campo-acceso-grupo input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+  outline: none;
+}
+
+.contenedor-entrada-password {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.contenedor-entrada-password input {
+  padding-right: 3.25rem;
+}
+
+.boton-toggle-visibilidad {
+  position: absolute;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.boton-toggle-visibilidad:hover {
+  color: #94a3b8;
+}
+
+.boton-acceder-envio {
+  width: 100%;
+  background: #0ea5e9;
+  border: none;
+  border-radius: 3rem;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.95rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.boton-acceder-envio:hover {
+  background: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(14, 165, 233, 0.35);
+}
+
+.boton-acceder-envio:disabled {
+  background: #1e293b;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.enlace-cambio-registro {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.enlace-cambio-registro a {
+  color: #0ea5e9;
+  font-weight: 600;
+  text-decoration: underline;
+  margin-left: 0.25rem;
+}
+
+.fila-campos-doble {
+  display: flex;
+  gap: 1rem;
+}
+
+.col-50 {
+  flex: 1;
+}
+
+.contenedor-input-validador {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.icono-validador-flotante {
+  position: absolute;
+  right: 1.15rem;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icono-validador-flotante.con-toggle {
+  right: 3rem;
+}
+
+.icono-validador-flotante .exito {
+  color: #10b981;
+}
+
+.icono-validador-flotante .error {
+  color: #ef4444;
+}
+
+input.campo-valido {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15) !important;
+}
+
+input.campo-invalido {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
+
 @media (max-width: 768px) {
   .contenedor-panel {
     padding: 1.25rem 1rem;
@@ -1190,6 +1582,34 @@ body {
 
   .subtitulo-autenticacion {
     margin-bottom: 1.75rem;
+  }
+
+  .pantalla-acceso-contenedor {
+    grid-template-columns: 1fr;
+    height: 100vh;
+    width: 100vw;
+    background: #060912;
+  }
+
+  .panel-informativo-izquierdo {
+    display: none !important;
+  }
+
+  .formulario-acceso-derecho {
+    width: 100%;
+    height: 100vh;
+    padding: 2.5rem 1.5rem;
+    align-items: center;
+  }
+
+  .contenido-formulario-acceso {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .fila-campos-doble {
+    flex-direction: column;
+    gap: 0;
   }
 }
 
