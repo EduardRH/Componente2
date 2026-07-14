@@ -15,6 +15,15 @@ export const crearTarea = async (req, res) => {
     if (!titulo) {
       return res.status(400).json({ mensaje: 'El titulo de la tarea es obligatorio.' });
     }
+    if (fechaLimite) {
+      const partesFecha = fechaLimite.split('-');
+      const fechaLimiteObj = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
+      const fechaHoy = new Date();
+      fechaHoy.setHours(0, 0, 0, 0);
+      if (fechaLimiteObj < fechaHoy) {
+        return res.status(400).json({ mensaje: 'La fecha limite no puede ser anterior a hoy.' });
+      }
+    }
     const nuevaTarea = new Tarea({
       titulo,
       descripcion,
@@ -61,7 +70,18 @@ export const actualizarTarea = async (req, res) => {
         return res.status(400).json({ mensaje: 'Categoria invalida.' });
       }
     }
-    if (fechaLimite !== undefined) tarea.fechaLimite = fechaLimite;
+    if (fechaLimite !== undefined) {
+      if (fechaLimite !== null && fechaLimite !== '') {
+        const partesFecha = fechaLimite.split('-');
+        const fechaLimiteObj = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
+        const fechaHoy = new Date();
+        fechaHoy.setHours(0, 0, 0, 0);
+        if (fechaLimiteObj < fechaHoy) {
+          return res.status(400).json({ mensaje: 'La fecha limite no puede ser anterior a hoy.' });
+        }
+      }
+      tarea.fechaLimite = fechaLimite;
+    }
     const tareaActualizada = await tarea.save();
     res.status(200).json(tareaActualizada);
   } catch (error) {

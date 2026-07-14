@@ -25,11 +25,26 @@ const FormularioTarea = ({ tareaEditar, alGuardar, alCancelar }) => {
     }
   }, [tareaEditar]);
 
+  const obtenerFechaActualLocal = () => {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  };
+
   const manejarEnvio = (evento) => {
     evento.preventDefault();
     if (!titulo.trim()) {
       establecerErrorValidacion('El titulo es obligatorio');
       return;
+    }
+    if (fechaLimite) {
+      const fechaActualLocal = obtenerFechaActualLocal();
+      if (fechaLimite < fechaActualLocal) {
+        establecerErrorValidacion('La fecha no puede ser anterior a hoy');
+        return;
+      }
     }
     establecerErrorValidacion('');
     alGuardar({
@@ -113,6 +128,7 @@ const FormularioTarea = ({ tareaEditar, alGuardar, alCancelar }) => {
             type="date"
             value={fechaLimite}
             onChange={(e) => establecerFechaLimite(e.target.value)}
+            min={obtenerFechaActualLocal()}
           />
         </div>
       </div>
